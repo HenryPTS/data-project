@@ -1,33 +1,69 @@
-import React, { FC, useRef, useEffect, useState } from 'react';
-import { Pie } from 'react-chartjs-2';
+import React, { ReactElement, useRef, useEffect, useState } from 'react';
+import styled from '@emotion/styled'
+import 'chart.js';
+import ChartComponent, { Pie, LinearComponentProps } from 'react-chartjs-2';
+import { AnswerOption } from '../../types';
 
-interface Response {
-  readonly answerOption: number;
-  readonly text: string;
-  selectedByRespondents: number;
-}
+const PieChartContainer = styled('div')`
+  margin: 60px auto;
+`
+const Legend = styled('h4')`
+  padding: 0;
+  margin: 0;
+  color: #0c0c0cd9;
+  text-align: center;
+  box-sizing: border-box;
+  position: relative;
+  top: -7px;
+  width: 380px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 
-interface IProps {
-  readonly data: Response[];
+`
+
+type IProps = {
+  readonly data: AnswerOption[];
   readonly display?: boolean;
+  height: number;
+  width: number;
+  title?: string | undefined
 }
 
-const MyD3Component: FC<IProps> = ({
-  data: propData,
-  display = false
-}) => {
-  const canvasRef = useRef(null);
+function PieChart(props: IProps): ReactElement<IProps> {
+  const {
+    data: propData,
+    display = false,
+    height,
+    width,
+    title
+  } = props
+  const canvasRef = useRef<ChartComponent<LinearComponentProps>>(null);
   const [state, setState] = useState()
+
   useEffect(
     () => {
-      if (propData && canvasRef.current) {
+      if (propData) {
         const selected = propData.reduce<number[]>((prev, curr): number[] => prev.concat(curr.selectedByRespondents), [])
         setState(selected)
       }
     }, [propData])
 
   return (
-    <Pie legend={{ display }} ref={canvasRef} data={getPieData(state)} width={400} height={400} />
+    <PieChartContainer>
+      <Pie
+        legend={{ display }}
+        ref={canvasRef}
+        data={getPieData(state)}
+        width={width}
+        height={height}
+        options={{
+          maintainAspectRatio: false,
+          responsive: true
+        }}
+      />
+      <Legend>{title}</Legend>
+    </PieChartContainer>
   );
 }
 
@@ -53,4 +89,4 @@ function getPieData(data = []) {
   })
 }
 
-export default MyD3Component
+export default PieChart
